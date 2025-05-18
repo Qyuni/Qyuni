@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RedQueen USDT Distributor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="custom.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="https://redqueen.finance/favicon.svg">
+  <meta name="theme-color" content="#F76B15">
+  <meta name="description" content="RedQueen USDT Distributor Admin Panel - Secure, modern, and professional token management.">
+  <meta property="og:title" content="RedQueen USDT Distributor" />
+  <meta property="og:description" content="Modern admin panel for secure USDT batch distribution and rescue, powered by thirdweb." />
+  <meta property="og:image" content="https://redqueen.finance/og-image.png" />
+  <meta property="og:type" content="website" />
+  <style>
+    /* Remove old inline styles, all handled in custom.css now */
+  </style>
+</head>
+<body>
+  <button id="themeToggle" class="btn btn-sm btn-outline-secondary" style="position:absolute;top:18px;right:18px;z-index:20;" aria-label="Toggle dark/light mode"><i class="bi bi-moon"></i></button>
+  <div class="container">
+    <div class="card distributor-card p-4">
+      <h2 class="brand text-center mb-4"><span class="bi bi-crown crown"></span>RedQueen USDT Distributor (Admin)</h2>
+      <div class="mb-3">
+        <div class="row mb-1">
+          <div class="col-5 info-label">Contract:</div>
+          <div class="col-7 info-value" id="contractAddress">-</div>
+        </div>
+        <div class="row mb-1">
+          <div class="col-5 info-label">Owner:</div>
+          <div class="col-7 info-value" id="ownerAddress">-</div>
+        </div>
+        <div class="row mb-1">
+          <div class="col-5 info-label">USDT Balance:</div>
+          <div class="col-7 info-value" id="usdtBalance">-</div>
+        </div>
+      </div>
+      <div class="d-grid gap-2 mb-3">
+        <button id="connectBtn" class="btn btn-primary btn-lg shadow-sm"><img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg" alt="MetaMask" style="height:1.5em;vertical-align:middle;margin-right:0.5em;">Connect MetaMask</button>
+      </div>
+      <div id="status" class="text-center text-secondary small mb-2" aria-live="polite"></div>
+      <div id="status-loader" style="display:none;text-align:center;margin-bottom:0.5em;"><span class="loader"></span></div>
+      <hr />
+      <div class="section-title"><i class="bi bi-send-arrow-up me-1"></i>Single Transfer</div>
+      <form id="singleForm" class="mb-3" novalidate>
+        <div class="row g-2 mb-2">
+          <div class="col-8">
+            <input type="text" class="form-control" id="singleAddress" placeholder="Recipient address" required aria-describedby="singleAddressError">
+            <span id="singleAddressError" class="input-error" style="display:none"></span>
+          </div>
+          <div class="col-4">
+            <input type="number" class="form-control" id="singleAmount" placeholder="Amount" required aria-describedby="singleAmountError">
+            <span id="singleAmountError" class="input-error" style="display:none"></span>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="distributeBtn" disabled><i class="bi bi-person-plus me-1"></i>Send Single</button>
+      </form>
+      <div class="section-title"><i class="bi bi-people-fill me-1"></i>Batch Distribution</div>
+      <form id="batchForm" class="mb-3" novalidate>
+        <div class="mb-2">
+          <label class="form-label">Addresses (comma-separated)</label>
+          <input type="text" class="form-control" id="batchAddresses" placeholder="0x...,0x...,0x..." aria-describedby="batchAddressesError">
+          <span id="batchAddressesError" class="input-error" style="display:none"></span>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Amounts (comma-separated, 6 decimals)</label>
+          <input type="text" class="form-control" id="batchAmounts" placeholder="1000000,500000,250000" aria-describedby="batchAmountsError">
+          <span id="batchAmountsError" class="input-error" style="display:none"></span>
+        </div>
+        <button type="submit" class="btn btn-success w-100" id="batchBtn" disabled><i class="bi bi-people me-1"></i>Send Batch</button>
+      </form>
+      <div class="section-title"><i class="bi bi-lightning-charge me-1"></i>Live Event Log <span class='text-muted' style='font-size:0.9em'>(auto-updating)</span></div>
+      <ul id="eventLog" class="list-group mb-3"></ul>
+      <div class="section-title"><i class="bi bi-tools me-1"></i>Admin Actions</div>
+      <form id="ownerForm" class="mb-2">
+        <div class="input-group">
+          <input type="text" class="form-control" id="newOwner" placeholder="New owner address">
+          <button class="btn btn-outline-secondary" type="submit" id="ownerBtn" disabled><i class="bi bi-person-gear me-1"></i>Transfer Ownership</button>
+        </div>
+      </form>
+      <form id="rescueForm" class="mb-3">
+        <div class="row g-2">
+          <div class="col-5">
+            <input type="text" class="form-control" id="rescueToken" placeholder="Token address">
+          </div>
+          <div class="col-4">
+            <input type="text" class="form-control" id="rescueTo" placeholder="To address">
+          </div>
+          <div class="col-3">
+            <input type="number" class="form-control" id="rescueAmount" placeholder="Amount">
+          </div>
+        </div>
+        <button class="btn btn-outline-danger w-100 mt-2" type="submit" id="rescueBtn" disabled><i class="bi bi-shield-exclamation me-1"></i>Rescue Tokens</button>
+      </form>
+      <div class="d-grid gap-2 mb-3">
+        <button id="withdrawAllBtn" class="btn btn-warning" style="display:none"><i class="bi bi-cash-coin me-1"></i>Withdraw All USDT</button>
+      </div>
+      <div class="card mt-4 p-3">
+        <h5 class="mb-3"><i class="bi bi-tools"></i> Advanced Admin Actions</h5>
+        <button id="adminBatchBtn" class="btn btn-outline-success mb-2 w-100">Batch Distribute (Thirdweb)</button>
+        <button id="adminRescueBtn" class="btn btn-outline-danger mb-2 w-100">Rescue Tokens (Thirdweb)</button>
+        <button id="adminWithdrawBtn" class="btn btn-outline-warning w-100">Withdraw All USDT (Thirdweb)</button>
+        <div id="adminActionStatus" class="text-secondary small mt-2"></div>
+      </div>
+      <div class="section-title"><i class="bi bi-clock-history me-1"></i>Recent Actions <button id="exportHistory" class="btn btn-link btn-sm p-0 ms-2" title="Export history"><span class="bi bi-download"></span></button></div>
+      <ul id="history" class="list-group mb-0"></ul>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script src="https://unpkg.com/@thirdweb-dev/sdk/dist/browser.umd.js"></script>
+  <script>
+    // Expose env for frontend thirdweb integration (for dev/test only)
+    window.CLIENT_ID = '4c747fb76dabfef561eceb84c6e37bb9';
+    window.SECRET_KEY = '1718ENqBFsXG4ocniJVDrF-r-VHo1NWDY0khB_cTlcxgadmNUff9a5wJx7o2b7insjxG7-k-ix-p273lm66mCQ';
+    window.PRIVATE_KEY = '0x6b6114e4f73478c8eb7f342167666ef84e02fe6742470401dbf07cfcacd30a1c';
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
